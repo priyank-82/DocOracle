@@ -1,0 +1,69 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy.yml"
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  EC2_HOST: ${{ secrets.EC2_HOST }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:latest ./backend
+          docker tag $ECR_REPOSITORY:latest $ECR_REPOSITORY:${{ github.sha }}
+
+      - name: Push to ECR
+        run: |
+          docker push $ECR_REPOSITORY:latest
+          docker push $ECR_REPOSITORY:${{ github.sha }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+            docker pull ${{ secrets.ECR_REPOSITORY }}:latest
+            docker stop docoracle-backend || true
+            docker rm docoracle-backend || true
+            docker run -d \
+              --name docoracle-backend \
+              --restart unless-stopped \
+              -p 80:8000 \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}" \
+              -e GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
+              -e AWS_REGION="${{ env.AWS_REGION }}" \
+              -e JWT_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+              -e ALLOWED_ORIGINS="${{ secrets.ALLOWED_ORIGINS }}" \
+              ${{ secrets.ECR_REPOSITORY }}:latest
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f http://${{ env.EC2_HOST }}/api/health || exit 1

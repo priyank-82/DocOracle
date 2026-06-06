@@ -1,0 +1,5 @@
+aws_region     = "us-east-1"
+project_name   = "docoracle"
+db_username    = "docadmin"
+db_password    = "s9514rDhKbwR6Uc9"
+db_name        = "docdb"

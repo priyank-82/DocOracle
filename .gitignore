@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.env
+.env.local
+__pycache__/
+*.pyc
+.terraform/
+terraform.tfstate*
+*.egg-info/
+dist/
+build/
+*.zip
+.DS_Store
