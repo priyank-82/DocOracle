@@ -9,19 +9,19 @@ const nextConfig = {
     return [
       {
         source: "/api/documents",
-        destination: "http://13.223.146.103/api/documents",
+        destination: "http://13.223.146.103:8000/api/documents",
       },
       {
         source: "/api/documents/:path*",
-        destination: "http://13.223.146.103/api/documents/:path*",
+        destination: "http://13.223.146.103:8000/api/documents/:path*",
       },
       {
         source: "/api/chat",
-        destination: "http://13.223.146.103/api/chat",
+        destination: "http://13.223.146.103:8000/api/chat",
       },
       {
         source: "/api/chat/:path*",
-        destination: "http://13.223.146.103/api/chat/:path*",
+        destination: "http://13.223.146.103:8000/api/chat/:path*",
       },
     ]
   },
