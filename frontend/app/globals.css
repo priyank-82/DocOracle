@@ -37,6 +37,14 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
+input, textarea, select {
+  color: var(--fg);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--fg-subtle);
+}
+
 ::selection {
   background: var(--accent-dim);
   color: var(--fg);

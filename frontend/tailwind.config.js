@@ -17,6 +17,7 @@ module.exports = {
           DEFAULT: "#fafafa",
           muted: "#a1a1aa",
           subtle: "#71717a",
+          inverted: "#0a0a0b",
         },
         border: {
           DEFAULT: "#27272a",
