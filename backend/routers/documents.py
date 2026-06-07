@@ -17,10 +17,11 @@ async def upload_document(
     user_id: uuid.UUID = Depends(get_current_user),
 ):
     content = await file.read()
-    s3_key = f"{user_id}/{uuid.uuid4()}_{file.filename}"
-    upload_file(content, s3_key)
+    doc_id = uuid.uuid4()
+    s3_key = f"{user_id}/{doc_id}_{file.filename}"
 
     doc = Document(
+        id=doc_id,
         user_id=user_id,
         filename=file.filename or "untitled.pdf",
         s3_key=s3_key,
@@ -28,6 +29,9 @@ async def upload_document(
     )
     db.add(doc)
     db.commit()
+
+    upload_file(content, s3_key)
+
     db.refresh(doc)
     return doc
 
