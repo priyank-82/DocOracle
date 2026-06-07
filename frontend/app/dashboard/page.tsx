@@ -14,6 +14,11 @@ export default function DashboardPage() {
     content: string
     page: number
   } | null>(null)
+  const [docListKey, setDocListKey] = useState(0)
+
+  const handleUploadComplete = () => {
+    setDocListKey((k) => k + 1)
+  }
 
   if (!session) {
     return (
@@ -37,12 +42,13 @@ export default function DashboardPage() {
           <h2 className="font-semibold text-lg">Documents</h2>
         </div>
         <div className="p-4">
-          <FileUpload />
+          <FileUpload onUploadComplete={handleUploadComplete} />
         </div>
         <div className="flex-1 overflow-y-auto p-4">
           <DocumentList
             selectedDocId={selectedDocId}
             onSelect={setSelectedDocId}
+            refreshKey={docListKey}
           />
         </div>
       </aside>

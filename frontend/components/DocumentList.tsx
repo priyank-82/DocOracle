@@ -7,9 +7,10 @@ import { Document, listDocuments, deleteDocument } from "@/lib/api"
 interface Props {
   selectedDocId: string | null
   onSelect: (id: string) => void
+  refreshKey: number
 }
 
-export default function DocumentList({ selectedDocId, onSelect }: Props) {
+export default function DocumentList({ selectedDocId, onSelect, refreshKey }: Props) {
   const { data: session } = useSession()
   const [docs, setDocs] = useState<Document[]>([])
 
@@ -25,7 +26,7 @@ export default function DocumentList({ selectedDocId, onSelect }: Props) {
 
   useEffect(() => {
     fetchDocs()
-  }, [session])
+  }, [session, refreshKey])
 
   const handleDelete = async (id: string) => {
     if (!session?.accessToken) return

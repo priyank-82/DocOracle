@@ -5,7 +5,11 @@ import { useDropzone } from "react-dropzone"
 import { useSession } from "next-auth/react"
 import { uploadDocument } from "@/lib/api"
 
-export default function FileUpload() {
+interface FileUploadProps {
+  onUploadComplete?: () => void
+}
+
+export default function FileUpload({ onUploadComplete }: FileUploadProps) {
   const { data: session } = useSession()
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -21,13 +25,14 @@ export default function FileUpload() {
       try {
         const doc = await uploadDocument(file, session.accessToken, setProgress)
         setDocId(doc.id)
+        onUploadComplete?.()
       } catch (err) {
         console.error("Upload failed:", err)
       } finally {
         setUploading(false)
       }
     },
-    [session]
+    [session, onUploadComplete]
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
