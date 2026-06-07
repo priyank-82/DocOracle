@@ -8,8 +8,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
-        destination: "http://13.223.146.103/api/:path*",
+        source: "/api/documents/:path*",
+        destination: "http://13.223.146.103/api/documents/:path*",
+      },
+      {
+        source: "/api/chat/:path*",
+        destination: "http://13.223.146.103/api/chat/:path*",
       },
     ]
   },
