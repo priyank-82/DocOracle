@@ -1,17 +1,34 @@
 "use client"
 
 import { useState } from "react"
+import { useSession, signIn } from "next-auth/react"
 import DocumentList from "@/components/DocumentList"
 import FileUpload from "@/components/FileUpload"
 import ChatInterface from "@/components/ChatInterface"
 import CitationPanel from "@/components/CitationPanel"
 
 export default function DashboardPage() {
+  const { data: session } = useSession()
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null)
   const [citationChunk, setCitationChunk] = useState<{
     content: string
     page: number
   } | null>(null)
+
+  if (!session) {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen px-4">
+        <h1 className="text-3xl font-bold mb-4">Sign in to continue</h1>
+        <p className="text-gray-600 mb-8">You need to sign in with Google to use DocOracle.</p>
+        <button
+          onClick={() => signIn("google")}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-700 transition"
+        >
+          Sign in with Google
+        </button>
+      </main>
+    )
+  }
 
   return (
     <div className="flex h-screen">
