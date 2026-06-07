@@ -115,7 +115,7 @@ export default function ChatInterface({ documentId, onCite }: Props) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             placeholder="Ask a question about this document..."
-            className="flex-1 rounded-xl px-4 py-3 text-sm text-fg bg-card border border-border placeholder-fg-subtle focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+            className="flex-1 rounded-xl px-4 py-3 text-sm text-white bg-[#1a1a1f] border border-border placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
             disabled={loading}
           />
           <button

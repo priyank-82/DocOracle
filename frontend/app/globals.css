@@ -35,6 +35,11 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-weight: 600;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, label, button, input, textarea, select, div {
+  font-weight: 600;
 }
 
 input, textarea, select {
