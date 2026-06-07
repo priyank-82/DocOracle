@@ -1,6 +1,7 @@
 import uuid
 import os
 import jwt
+from jwt import PyJWKClient
 import requests
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -11,64 +12,47 @@ from models.database import User, get_db
 security = HTTPBearer(auto_error=False)
 
 GOOGLE_CERTS_URL = "https://www.googleapis.com/oauth2/v3/certs"
+GOOGLE_TOKEN_INFO = "https://www.googleapis.com/oauth2/v1/tokeninfo"
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
-_certs_cache = {"keys": None}
+_jwk_client = None
 
 
-def _get_google_certs():
-    if _certs_cache["keys"] is None:
-        resp = requests.get(GOOGLE_CERTS_URL, timeout=10)
-        _certs_cache["keys"] = resp.json().get("keys", [])
-    return _certs_cache["keys"]
+def _get_jwk_client():
+    global _jwk_client
+    if _jwk_client is None:
+        _jwk_client = PyJWKClient(GOOGLE_CERTS_URL, cache_keys=True)
+    return _jwk_client
 
 
 def _verify_id_token(token: str) -> dict:
-    # Decode header to get kid
     try:
-        header = jwt.get_unverified_header(token)
+        jwk_client = _get_jwk_client()
+        signing_key = jwk_client.get_signing_key_from_jwt(token)
+        payload = jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=["RS256"],
+            audience=GOOGLE_CLIENT_ID,
+            options={"verify_exp": True},
+        )
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidAudienceError:
+        raise HTTPException(status_code=401, detail="Invalid audience")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Invalid ID token: {str(e)}")
+
+
+def _verify_via_tokeninfo(token: str) -> dict | None:
+    try:
+        resp = requests.get(f"{GOOGLE_TOKEN_INFO}?access_token={token}", timeout=5)
+        if resp.status_code != 200:
+            return None
+        return resp.json()
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid token format")
-
-    kid = header.get("kid")
-    keys = _get_google_certs()
-
-    for key_data in keys:
-        if key_data.get("kid") == kid:
-            public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key_data)
-            try:
-                payload = jwt.decode(token, public_key, algorithms=["RS256"], audience=GOOGLE_CLIENT_ID)
-                return payload
-            except jwt.ExpiredSignatureError:
-                raise HTTPException(status_code=401, detail="Token expired")
-            except jwt.InvalidAudienceError:
-                raise HTTPException(status_code=401, detail="Invalid audience")
-            except Exception:
-                raise HTTPException(status_code=401, detail="Invalid token")
-
-    # Refresh certs in case of key rotation
-    _certs_cache["keys"] = None
-    keys = _get_google_certs()
-    for key_data in keys:
-        if key_data.get("kid") == kid:
-            public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key_data)
-            try:
-                payload = jwt.decode(token, public_key, algorithms=["RS256"], audience=GOOGLE_CLIENT_ID)
-                return payload
-            except Exception:
-                raise HTTPException(status_code=401, detail="Invalid token")
-
-    raise HTTPException(status_code=401, detail="Unknown signing key")
-
-
-GOOGLE_TOKEN_INFO = "https://www.googleapis.com/oauth2/v1/tokeninfo"
-
-
-def _verify_via_tokeninfo(token: str) -> dict:
-    resp = requests.get(f"{GOOGLE_TOKEN_INFO}?access_token={token}", timeout=5)
-    if resp.status_code != 200:
         return None
-    return resp.json()
 
 
 def get_current_user(
@@ -93,10 +77,7 @@ def get_current_user(
 
     # Fallback: try as access token via tokeninfo
     if data is None:
-        try:
-            data = _verify_via_tokeninfo(token)
-        except Exception:
-            pass
+        data = _verify_via_tokeninfo(token)
 
     if data is None:
         raise HTTPException(status_code=401, detail="Invalid Google token")
