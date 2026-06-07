@@ -52,9 +52,11 @@ export default function ChatInterface({ documentId, onCite }: Props) {
         { role: "assistant", content: res.answer, citations: res.citations },
       ])
     } catch (err) {
+      console.error("Chat error:", err)
+      const msg = err instanceof Error ? err.message : "Unknown error"
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, something went wrong." },
+        { role: "assistant", content: `Error: ${msg}` },
       ])
     } finally {
       setLoading(false)
