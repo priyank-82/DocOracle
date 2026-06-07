@@ -22,12 +22,12 @@ export default function DashboardPage() {
 
   if (!session) {
     return (
-      <main className="flex flex-col items-center justify-center min-h-screen px-4">
-        <h1 className="text-3xl font-bold mb-4">Sign in to continue</h1>
-        <p className="text-gray-600 mb-8">You need to sign in with Google to use DocOracle.</p>
+      <main className="flex flex-col items-center justify-center min-h-screen px-4 bg-bg">
+        <h1 className="text-3xl font-bold mb-4 text-fg">Sign in to continue</h1>
+        <p className="text-fg-muted mb-8">You need to sign in with Google to use DocOracle.</p>
         <button
           onClick={() => signIn("google")}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-700 transition"
+          className="bg-accent text-fg-inverted px-6 py-3 rounded-xl text-lg font-medium hover:opacity-90 transition-all"
         >
           Sign in with Google
         </button>
@@ -36,10 +36,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen">
-      <aside className="w-80 border-r bg-white flex flex-col">
-        <div className="p-4 border-b">
-          <h2 className="font-semibold text-lg">Documents</h2>
+    <div className="flex h-screen bg-bg">
+      <aside className="w-80 border-r border-border bg-bg flex flex-col">
+        <div className="p-4 border-b border-border">
+          <h2 className="font-semibold text-lg text-fg">Documents</h2>
         </div>
         <div className="p-4">
           <FileUpload onUploadComplete={handleUploadComplete} />
@@ -60,7 +60,7 @@ export default function DashboardPage() {
             onCite={(chunk) => setCitationChunk(chunk)}
           />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
+          <div className="flex-1 flex items-center justify-center text-fg-subtle">
             Select a document to start chatting
           </div>
         )}

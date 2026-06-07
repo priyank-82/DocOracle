@@ -64,7 +64,7 @@ export default function ChatInterface({ documentId, onCite }: Props) {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col bg-bg">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, i) => (
           <div
@@ -72,13 +72,13 @@ export default function ChatInterface({ documentId, onCite }: Props) {
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-xl rounded-lg px-4 py-2 ${
+              className={`max-w-xl rounded-xl px-4 py-3 ${
                 msg.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white border"
+                  ? "bg-accent text-fg-inverted"
+                  : "bg-card border border-border text-fg"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
               {msg.citations && msg.citations.length > 0 && (
                 <div className="mt-2 flex gap-1 flex-wrap">
                   {msg.citations.map((c, j) => (
@@ -87,7 +87,7 @@ export default function ChatInterface({ documentId, onCite }: Props) {
                       onClick={() =>
                         onCite({ content: c.content, page: c.page_number })
                       }
-                      className="text-xs bg-gray-100 px-2 py-0.5 rounded hover:bg-gray-200"
+                      className="text-xs bg-bg-elevated text-fg-muted px-2 py-0.5 rounded-md border border-border hover:border-border-hover hover:text-fg transition-colors"
                     >
                       [Excerpt {j + 1}]
                     </button>
@@ -99,15 +99,15 @@ export default function ChatInterface({ documentId, onCite }: Props) {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white border rounded-lg px-4 py-2">
-              <span className="text-sm text-gray-400">Typing...</span>
+            <div className="bg-card border border-border rounded-xl px-4 py-3">
+              <span className="text-sm text-fg-subtle">Typing...</span>
             </div>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t p-4">
+      <div className="border-t border-border p-4 bg-bg">
         <div className="flex gap-2">
           <input
             type="text"
@@ -115,13 +115,13 @@ export default function ChatInterface({ documentId, onCite }: Props) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             placeholder="Ask a question about this document..."
-            className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 rounded-xl px-4 py-3 text-sm text-fg bg-card border border-border placeholder-fg-subtle focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
             disabled={loading}
           />
           <button
             onClick={send}
             disabled={loading || !input.trim()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+            className="bg-accent text-fg-inverted px-5 py-3 rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-all"
           >
             Send
           </button>
