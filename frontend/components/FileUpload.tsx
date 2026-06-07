@@ -52,34 +52,56 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
-        isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
-      } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+      className={`relative border-2 rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
+        isDragActive
+          ? "border-accent bg-accent-dim"
+          : uploading
+          ? "border-border-hover bg-bg-elevated"
+          : "border-border hover:border-border-hover bg-card-hover"
+      } ${uploading ? "pointer-events-none opacity-80" : ""}`}
     >
       <input {...getInputProps()} />
       {error && (
-        <p className="text-sm text-red-500 mb-2" role="alert">{error}</p>
+        <div className="absolute -top-8 left-0 right-0 text-center">
+          <span className="inline-block px-3 py-1.5 bg-danger-dim text-danger text-xs rounded-full animate-fade-in">
+            {error}
+          </span>
+        </div>
       )}
       {uploading ? (
-        <div>
-          <p className="text-sm text-gray-600">
-            {docId ? "Processing..." : `Uploading... ${progress}%`}
+        <div className="space-y-3">
+          <p className="text-sm text-fg-muted">
+            {docId ? "Processing document…" : `Uploading… ${progress}%`}
           </p>
           {!docId && (
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+            <div className="w-full bg-bg-elevated rounded-full h-2 overflow-hidden">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all"
+                className="bg-accent h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
           )}
         </div>
       ) : (
-        <p className="text-sm text-gray-500">
-          {isDragActive
-            ? "Drop PDF here"
-            : "Drag & drop a PDF, or click to select"}
-        </p>
+        <div className="space-y-2">
+          <svg
+            className="mx-auto w-10 h-10 text-fg-subtle"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+          <p className="text-sm text-fg-muted">
+            {isDragActive ? "Drop PDF here" : "Drag & drop a PDF, or click to select"}
+          </p>
+          <p className="text-xs text-fg-subtle">Max 1 file · PDF only</p>
+        </div>
       )}
     </div>
   )
