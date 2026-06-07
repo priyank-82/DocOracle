@@ -1,5 +1,6 @@
+import json
 import uuid
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from models.database import ChatMessage, get_db
@@ -12,12 +13,24 @@ from routers.auth import get_current_user
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 
+async def parse_query_request(request: Request) -> QueryRequest:
+    body = await request.body()
+    if not body:
+        raise ValueError("Empty body")
+    try:
+        data = json.loads(body)
+    except json.JSONDecodeError:
+        raise ValueError("Invalid JSON")
+    return QueryRequest(**data)
+
+
 @router.post("/query", response_model=QueryResponse)
-def query_document(
-    req: QueryRequest,
+async def query_document(
+    request: Request,
     db: Session = Depends(get_db),
     user_id: uuid.UUID = Depends(get_current_user),
 ):
+    req = await parse_query_request(request)
     question_embedding = embed_text(req.question)
     citations = find_similar_chunks(db, req.document_id, question_embedding)
     answer = ask_groq(req.question, citations)
