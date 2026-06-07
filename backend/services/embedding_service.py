@@ -6,7 +6,7 @@ _model = None
 def get_embedder() -> TextEmbedding:
     global _model
     if _model is None:
-        _model = TextEmbedding("Xenova/all-MiniLM-L6-v2")
+        _model = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
     return _model
 
 

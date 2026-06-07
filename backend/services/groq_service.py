@@ -3,7 +3,7 @@ from groq import Groq
 
 from models.schemas import Citation
 
-GROQ_MODEL = "llama3-70b-8192"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 _client: Groq | None = None
 
 SYSTEM_PROMPT = """You are a precise document assistant. Answer questions based ONLY on the provided document excerpts. If the answer is not in the excerpts, say so clearly. Always cite which excerpt supports your answer using [Excerpt N] notation. Be concise and factual."""

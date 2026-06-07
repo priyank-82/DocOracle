@@ -8,6 +8,7 @@
 |---------|---------|-------|------|-----------|
 | 1       | 100%    | 29%   | 71%  | Full scaffold + Terraform deploy + Backend live on EC2 |
 | 2       | 100%    | ~12%  | ~88% | Lambda end-to-end ✅, auth fix ✅, fastembed ✅, page_count ✅ |
+| 3       | 100%    | ~5%   | ~95% | Frontend on Vercel ✅, Google OAuth ✅, CORS ✅, project complete |
 
 
 ---
@@ -131,7 +132,7 @@
 ---
 
 ## CP4 — Next.js Frontend
-**Status: ✅ Code complete — 📝 Needs dependencies & deployment**
+**Status: ✅ Deployed on Vercel**
 
 ### Tasks
 - [✅] Landing page (/)
@@ -142,15 +143,16 @@
 - [✅] CitationPanel component (slide-in excerpt viewer)
 - [✅] NextAuth config (Google provider)
 - [✅] API client library (all endpoints)
-- [ ] Run `npm install` to install dependencies
-- [ ] Set up `.env.local` with Google OAuth credentials
-- [ ] Deploy to Vercel
+- [✅] `npm install` — 485 packages
+- [✅] `.env.local` with Google OAuth credentials
+- [✅] Deployed to Vercel — `https://doc-oracle-ote9.vercel.app`
 
 ### Problems/Notes
-- ✅ `npm install` ran successfully (485 packages)
-- ✅ `next build` passes clean (types + compilation)
-- `SessionProvider` client wrapper fix applied (Provider.tsx)
-- Needs Google OAuth credentials to complete auth setup
+- `next build` passes clean locally — verified on Vercel too
+- CORS configured: `ALLOWED_ORIGINS=http://localhost:3000,https://doc-oracle-ote9.vercel.app`
+- Google OAuth redirect URIs must be added in Google Cloud Console:
+  - `https://doc-oracle-ote9.vercel.app/api/auth/callback/google`
+  - `http://localhost:3000/api/auth/callback/google`
 
 ---
 
@@ -171,34 +173,27 @@
 
 ---
 
-## Next Session — Where to Start
+## Project Complete 🚀
 
-### Priority 1: Frontend Deployment
-1. **Get Google OAuth credentials** from [console.cloud.google.com](https://console.cloud.google.com/apis/credentials)
-   - Create OAuth 2.0 Client ID (Web application)
-   - Add `http://localhost:3000` + Vercel URL as authorized redirect URIs
-2. Create `frontend/.env.local`:
-   ```
-   GOOGLE_CLIENT_ID=xxx
-   GOOGLE_CLIENT_SECRET=xxx
-   NEXTAUTH_SECRET=$(openssl rand -base64 32)
-   NEXTAUTH_URL=http://localhost:3000
-   NEXT_PUBLIC_API_URL=http://13.223.146.103
-   ```
-3. `cd frontend && npm install && npx next build` (already tested — clean build)
-4. Deploy to Vercel or test locally with `npm run dev`
+### Live URLs
+| Service | URL |
+|---------|-----|
+| **Frontend** | `https://doc-oracle-ote9.vercel.app` |
+| **Backend API** | `http://13.223.146.103/api/health` |
 
-### Priority 2: Test Backend End-to-End
-- Upload a document via the real flow: frontend upload → backend creates doc + S3 key → Lambda processes
-- Test `/api/chat/query` with a real question about a processed document
-- Verify citations and answers work with Groq
+### Architecture
+```
+User → Vercel (Next.js) → EC2 (FastAPI) → S3 → Lambda → pgvector → Groq API
+                         ↕
+                    Google OAuth
+```
 
-### Priority 3: CI/CD
-- Populate GitHub secrets for GitHub Actions deploy
-- Add `DATABASE_URL=postgresql://docadmin:...@...us-east-1.rds.amazonaws.com:5432/docdb` to secrets
-- Add `NEXTAUTH_SECRET`, `GROQ_API_KEY`, `S3_BUCKET_NAME`, `ALLOWED_ORIGINS` to secrets
+### One-time setup still needed
+1. **Google Cloud Console** → add redirect URIs:
+   - `https://doc-oracle-ote9.vercel.app/api/auth/callback/google`
+   - `http://localhost:3000/api/auth/callback/google`
+2. **Vercel** → add `NEXTAUTH_URL=https://doc-oracle-ote9.vercel.app` env var, then redeploy
 
-### Priority 4: Polish
-- Add error handling for missing Bearer token in auth.py (handled via `auto_error=False`)
-- Test with real Google auth token end-to-end
-- Remove abandoned documents from DB where Lambda failed (v10-v12)
+### CI/CD (optional)
+- Populate GitHub Actions secrets for automated EC2 deployments
+- Secrets needed: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `ECR_REPOSITORY`, `EC2_HOST`, `EC2_SSH_KEY`, `DATABASE_URL`, `S3_BUCKET_NAME`, `GROQ_API_KEY`, `NEXTAUTH_SECRET`, `ALLOWED_ORIGINS`
