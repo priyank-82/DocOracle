@@ -6,6 +6,7 @@ import DocumentList from "@/components/DocumentList"
 import FileUpload from "@/components/FileUpload"
 import ChatInterface from "@/components/ChatInterface"
 import CitationPanel from "@/components/CitationPanel"
+import Navbar from "@/components/Navbar"
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -36,8 +37,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-bg">
-      <aside className="w-80 border-r border-border bg-bg flex flex-col">
+    <div className="flex flex-col h-screen bg-bg">
+      <Navbar />
+      <div className="flex-1 flex">
+        <aside className="w-80 border-r border-border bg-bg flex flex-col">
         <div className="p-4 border-b border-border">
           <h2 className="font-semibold text-lg text-fg">Documents</h2>
         </div>
@@ -72,6 +75,7 @@ export default function DashboardPage() {
           onClose={() => setCitationChunk(null)}
         />
       )}
+      </div>
     </div>
   )
 }
