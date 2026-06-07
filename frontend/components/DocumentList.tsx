@@ -28,7 +28,7 @@ export default function DocumentList({ selectedDocId, onSelect, refreshKey }: Pr
     fetchDocs()
   }, [session, refreshKey])
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     if (!session?.accessToken) return
     try {
@@ -100,7 +100,7 @@ export default function DocumentList({ selectedDocId, onSelect, refreshKey }: Pr
               </div>
             </div>
             <button
-              onClick={handleDelete}
+              onClick={(e) => handleDelete(e, doc.id)}
               className="p-1.5 rounded-lg text-fg-subtle hover:text-danger hover:bg-danger-dim opacity-0 group-hover:opacity-100 transition-all duration-150"
               aria-label={`Delete ${doc.filename}`}
             >
