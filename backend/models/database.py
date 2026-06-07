@@ -38,7 +38,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(255), unique=True, nullable=False)
+    google_id = Column(String(64), unique=True, nullable=True)
+    email = Column(String(255), unique=True, nullable=True)
     name = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
 
