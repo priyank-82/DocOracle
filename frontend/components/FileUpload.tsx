@@ -14,20 +14,27 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [docId, setDocId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const onDrop = useCallback(
     async (accepted: File[]) => {
       const file = accepted[0]
       if (!file || !session?.accessToken) return
 
+      if (file.type !== "application/pdf") {
+        setError("File must be a PDF")
+        return
+      }
+
       setUploading(true)
       setProgress(0)
+      setError(null)
       try {
         const doc = await uploadDocument(file, session.accessToken, setProgress)
         setDocId(doc.id)
         onUploadComplete?.()
       } catch (err) {
-        console.error("Upload failed:", err)
+        setError(err instanceof Error ? err.message : "Upload failed")
       } finally {
         setUploading(false)
       }
@@ -50,6 +57,9 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
       } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
     >
       <input {...getInputProps()} />
+      {error && (
+        <p className="text-sm text-red-500 mb-2" role="alert">{error}</p>
+      )}
       {uploading ? (
         <div>
           <p className="text-sm text-gray-600">
