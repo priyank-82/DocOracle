@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const isVercel = typeof window !== "undefined" && window.location.origin.includes("vercel.app")
+const API_BASE = isVercel ? "" : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000")
 
 async function fetchAPI<T>(
   endpoint: string,
