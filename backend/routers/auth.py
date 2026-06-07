@@ -61,14 +61,47 @@ def _verify_id_token(token: str) -> dict:
     raise HTTPException(status_code=401, detail="Unknown signing key")
 
 
+GOOGLE_TOKEN_INFO = "https://www.googleapis.com/oauth2/v1/tokeninfo"
+
+
+def _verify_via_tokeninfo(token: str) -> dict:
+    resp = requests.get(f"{GOOGLE_TOKEN_INFO}?access_token={token}", timeout=5)
+    if resp.status_code != 200:
+        return None
+    return resp.json()
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db),
 ) -> uuid.UUID:
     if not credentials:
         return uuid.UUID(os.environ.get("DEV_USER_ID", "00000000-0000-0000-0000-000000000001"))
+
+    token = credentials.credentials
+    data = None
+
+    # Try ID token (JWT) first
     try:
-        data = _verify_id_token(credentials.credentials)
+        header = jwt.get_unverified_header(token)
+        if header.get("kid"):
+            data = _verify_id_token(token)
+    except HTTPException:
+        raise
+    except Exception:
+        pass
+
+    # Fallback: try as access token via tokeninfo
+    if data is None:
+        try:
+            data = _verify_via_tokeninfo(token)
+        except Exception:
+            pass
+
+    if data is None:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    try:
         google_id = data.get("sub")
         if not google_id:
             raise HTTPException(status_code=401, detail="No subject in token")
