@@ -11,5 +11,5 @@ dist/
 build/
 *.zip
 .DS_Store
-ai_document_intelligence_platform/
-CHECKPOINTS/
+ai_document_intelligence_platform.txt
+CHECKPOINTS.md
