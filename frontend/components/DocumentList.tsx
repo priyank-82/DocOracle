@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { Document, listDocuments, deleteDocument } from "@/lib/api"
 
@@ -13,20 +13,43 @@ interface Props {
 export default function DocumentList({ selectedDocId, onSelect, refreshKey }: Props) {
   const { data: session } = useSession()
   const [docs, setDocs] = useState<Document[]>([])
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const fetchDocs = async () => {
+  const fetchDocs = useCallback(async () => {
     if (!session?.accessToken) return
     try {
       const result = await listDocuments(session.accessToken)
       setDocs(result)
+      return result
     } catch (err) {
       console.error("Failed to list documents:", err)
+      return []
     }
-  }
+  }, [session])
 
   useEffect(() => {
     fetchDocs()
   }, [session, refreshKey])
+
+  // Poll while any doc is processing
+  useEffect(() => {
+    const hasProcessing = docs.some((d) => d.status === "processing")
+    if (hasProcessing && !intervalRef.current) {
+      intervalRef.current = setInterval(() => {
+        fetchDocs()
+      }, 3000)
+    }
+    if (!hasProcessing && intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [docs, fetchDocs])
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -54,6 +77,12 @@ export default function DocumentList({ selectedDocId, onSelect, refreshKey }: Pr
       <span
         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${variants[status] || "bg-border text-fg-subtle"}`}
       >
+        {status === "processing" && (
+          <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        )}
         {labels[status] || status}
       </span>
     )
@@ -76,7 +105,7 @@ export default function DocumentList({ selectedDocId, onSelect, refreshKey }: Pr
       {docs.map((doc) => (
         <li
           key={doc.id}
-          className={`group relative p-3 rounded-lg border transition-all duration-150 ${
+          className={`group relative p-3 rounded-lg border transition-all duration-150 cursor-pointer ${
             selectedDocId === doc.id
               ? "bg-accent-dim border-accent/30"
               : "bg-card-hover hover:bg-bg-hover border-border"

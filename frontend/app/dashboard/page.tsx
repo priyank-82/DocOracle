@@ -37,14 +37,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-bg">
+    <div className="flex flex-col h-screen bg-bg overflow-hidden">
       <Navbar />
-      <div className="flex-1 flex">
-        <aside className="w-80 border-r border-border bg-bg flex flex-col">
-        <div className="p-4 border-b border-border">
+      <div className="flex-1 flex overflow-hidden">
+        <aside className="w-80 shrink-0 border-r border-border bg-bg flex flex-col h-full">
+        <div className="p-4 border-b border-border shrink-0">
           <h2 className="font-semibold text-lg text-fg">Documents</h2>
         </div>
-        <div className="p-4">
+        <div className="p-4 shrink-0">
           <FileUpload onUploadComplete={handleUploadComplete} />
         </div>
         <div className="flex-1 overflow-y-auto p-4">
