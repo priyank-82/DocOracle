@@ -34,6 +34,7 @@ class QueryResponse(BaseModel):
 class ChatMessageOut(BaseModel):
     role: str
     content: str
+    citations: list[Citation] = []
 
     class Config:
         from_attributes = True

@@ -102,7 +102,7 @@ export async function queryDocument(
 export async function getChatHistory(
   docId: string,
   token: string
-): Promise<{ role: string; content: string }[]> {
+): Promise<{ role: string; content: string; citations?: { chunk_id: string; content: string; page_number: number }[] }[]> {
   return fetchAPI(`/api/chat/history/${docId}`, {
     headers: { Authorization: `Bearer ${token}` },
   })

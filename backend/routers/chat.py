@@ -3,8 +3,8 @@ import uuid
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
-from models.database import ChatMessage, get_db
-from models.schemas import QueryRequest, QueryResponse, ChatMessageOut
+from models.database import ChatMessage, Chunk, get_db
+from models.schemas import QueryRequest, QueryResponse, ChatMessageOut, Citation
 from services.embedding_service import embed_text
 from services.retrieval_service import find_similar_chunks
 from services.groq_service import ask_groq
@@ -58,9 +58,28 @@ def get_history(
     db: Session = Depends(get_db),
     user_id: uuid.UUID = Depends(get_current_user),
 ):
-    return (
+    messages = (
         db.query(ChatMessage)
         .filter(ChatMessage.document_id == doc_id, ChatMessage.user_id == user_id)
         .order_by(ChatMessage.created_at)
         .all()
     )
+    result = []
+    for msg in messages:
+        citations = []
+        if msg.cited_chunk_ids:
+            chunks = (
+                db.query(Chunk)
+                .filter(Chunk.id.in_(msg.cited_chunk_ids))
+                .all()
+            )
+            citations = [
+                Citation(chunk_id=c.id, content=c.content, page_number=c.page_number)
+                for c in chunks
+            ]
+        result.append(ChatMessageOut(
+            role=msg.role,
+            content=msg.content,
+            citations=citations,
+        ))
+    return result

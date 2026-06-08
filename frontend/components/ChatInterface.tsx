@@ -41,7 +41,11 @@ export default function ChatInterface({ documentId, onCite }: Props) {
     getChatHistory(documentId, session.accessToken)
       .then((history) =>
         setMessages(
-          history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content }))
+          history.map((m) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+            citations: m.citations || [],
+          }))
         )
       )
       .catch(() => setMessages([]))
