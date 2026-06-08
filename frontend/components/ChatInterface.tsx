@@ -15,6 +15,16 @@ interface Props {
   onCite: (chunk: { content: string; page: number }) => void
 }
 
+function renderMarkdown(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>
+    }
+    return part
+  })
+}
+
 export default function ChatInterface({ documentId, onCite }: Props) {
   const { data: session } = useSession()
   const [messages, setMessages] = useState<Message[]>([])
@@ -78,7 +88,7 @@ export default function ChatInterface({ documentId, onCite }: Props) {
                   : "bg-card border border-border text-fg"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{renderMarkdown(msg.content)}</p>
               {msg.citations && msg.citations.length > 0 && (
                 <div className="mt-3 flex gap-1.5 flex-wrap">
                   {msg.citations.map((c, j) => (
