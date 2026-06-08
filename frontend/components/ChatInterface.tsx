@@ -80,16 +80,17 @@ export default function ChatInterface({ documentId, onCite }: Props) {
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
               {msg.citations && msg.citations.length > 0 && (
-                <div className="mt-2 flex gap-1 flex-wrap">
+                <div className="mt-3 flex gap-1.5 flex-wrap">
                   {msg.citations.map((c, j) => (
                     <button
                       key={j}
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation()
                         onCite({ content: c.content, page: c.page_number })
-                      }
-                      className="text-xs bg-bg-elevated text-fg-muted px-2 py-0.5 rounded-md border border-border hover:border-border-hover hover:text-fg transition-colors"
+                      }}
+                      className="text-xs bg-accent/10 text-accent px-2.5 py-1 rounded-lg border border-accent/30 hover:bg-accent/20 hover:border-accent/50 transition-all cursor-pointer"
                     >
-                      [Excerpt {j + 1}]
+                      Page {c.page_number} · Excerpt {j + 1}
                     </button>
                   ))}
                 </div>
