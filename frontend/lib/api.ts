@@ -16,6 +16,7 @@ async function fetchAPI<T>(
     const err = await res.text()
     throw new Error(err)
   }
+  if (res.status === 204) return undefined as T
   return res.json()
 }
 
